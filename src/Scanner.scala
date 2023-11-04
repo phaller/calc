@@ -12,6 +12,7 @@ class Scanner(reader: InputStreamReader) extends Iterator[Token] {
         currentToken != Token(EOF)
     
     def next(): Token =
+        if currentToken == null then currentToken = nextToken()
         val result = currentToken
         currentToken = nextToken()
         result
