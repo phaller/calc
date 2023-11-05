@@ -1,7 +1,7 @@
 
 case class Token(kind: TokenKind)
 
-class IntToken(value: Int) extends Token(INTLIT) {
+class IntToken(val value: Int) extends Token(INTLIT) {
     override def toString(): String =
         s"INTLIT($value)"
 }

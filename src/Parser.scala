@@ -37,39 +37,49 @@ class Parser(scanner: Scanner) {
 
     /* prog -> expr EOF
      */
-    def prog(): Unit = {
-        expr()
+    def prog(): Expr = {
+        val e = expr()
         expect(EOF)
+        e
     }
 
     /* expr -> term { additive_op term }
      */
-    def expr(): Unit = {
-        term()
+    def expr(): Expr = {
+        var lhs = term()
         while currentToken.kind == PLUS || currentToken.kind == MINUS do
+            val opKind = currentToken.kind
             nextToken()
-            term()
+            val rhs = term()
+            lhs = EBinOp(opKind, lhs, rhs)
+        lhs
     }
 
     /* term -> factor { mult_op factor }
      */
-    def term(): Unit = {
-        factor()
+    def term(): Expr = {
+        // example: (3 * 5) * 2
+        var lhs = factor() // 3
         while currentToken.kind == TIMES || currentToken.kind == DIV do
+            val opKind = currentToken.kind  // *
             nextToken()
-            factor()
+            val rhs = factor() // 2
+            lhs = EBinOp(opKind, lhs, rhs) // EBinOp(*, EBinOp(*, 3, 5), 2)
+        lhs
     }
 
     /* factor -> Num | "(" expr ")"
      */
-    def factor(): Unit = {
-        if currentToken.kind == INTLIT then
+    def factor(): Expr = currentToken match {
+        case tok: IntToken =>
             nextToken()
-        else if currentToken.kind == LPAREN then
+            ENum(tok.value)
+        case Token(LPAREN) =>
             nextToken()
-            expr()
+            val e = expr()
             expect(RPAREN)
-        else
+            e
+        case _ =>
             error(s"Parsing error: expected INTLIT or LPAREN token, but found $currentToken")
     }
 }

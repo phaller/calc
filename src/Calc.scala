@@ -4,5 +4,6 @@ import java.io.InputStreamReader
     val scanner = Scanner(InputStreamReader(System.in))
 
     val parser = Parser(scanner)
-    parser.prog()
+    val expr = parser.prog()
     println("Parsing successful")
+    println(s"Tree: $expr")
