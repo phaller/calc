@@ -12,6 +12,7 @@ case object PLUS extends TokenKind
 case object MINUS extends TokenKind
 case object TIMES extends TokenKind
 case object DIV extends TokenKind
+case object EXP extends TokenKind
 case object LPAREN extends TokenKind
 case object RPAREN extends TokenKind
 case object INTLIT extends TokenKind

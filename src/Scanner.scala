@@ -49,6 +49,9 @@ class Scanner(reader: InputStreamReader) extends Iterator[Token] {
         else if currentChar == '/' then
             nextChar()
             Token(DIV)
+        else if currentChar == '^' then
+            nextChar()
+            Token(EXP)
         else if currentChar == '(' then
             nextChar()
             Token(LPAREN)

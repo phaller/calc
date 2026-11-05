@@ -38,48 +38,57 @@ class Parser(scanner: Scanner) {
     /* prog -> expr EOF
      */
     def prog(): Expr = {
-        val e = expr()
+        val e = expr(1)
         expect(EOF)
         e
     }
 
-    /* expr -> term { additive_op term }
-     */
-    def expr(): Expr = {
-        var lhs = term()
-        while currentToken.kind == PLUS || currentToken.kind == MINUS do
-            val opKind = currentToken.kind
+    def atom(): Expr = currentToken match {
+        case t: IntToken =>
             nextToken()
-            val rhs = term()
-            lhs = EBinOp(opKind, lhs, rhs)
-        lhs
-    }
-
-    /* term -> factor { mult_op factor }
-     */
-    def term(): Expr = {
-        // example: (3 * 5) * 2
-        var lhs = factor() // 3
-        while currentToken.kind == TIMES || currentToken.kind == DIV do
-            val opKind = currentToken.kind  // *
-            nextToken()
-            val rhs = factor() // 2
-            lhs = EBinOp(opKind, lhs, rhs) // EBinOp(*, EBinOp(*, 3, 5), 2)
-        lhs
-    }
-
-    /* factor -> Num | "(" expr ")"
-     */
-    def factor(): Expr = currentToken match {
-        case tok: IntToken =>
-            nextToken()
-            ENum(tok.value)
+            ENum(t.value)
         case Token(LPAREN) =>
             nextToken()
-            val e = expr()
+            val e = expr(1)
             expect(RPAREN)
             e
         case _ =>
-            error(s"Parsing error: expected INTLIT or LPAREN token, but found $currentToken")
+            error("Expected atom, but found: " + currentToken)
     }
+
+    val precedence = Map[TokenKind, Int](
+        PLUS -> 1,
+        MINUS -> 1,
+        TIMES -> 2,
+        DIV -> 2,
+        EXP -> 3
+    )
+
+    // left = 1, right = 0
+    val assoc = Map[TokenKind, Int](
+        PLUS -> 1,
+        MINUS -> 1,
+        TIMES -> 1,
+        DIV -> 1,
+        EXP -> 0
+    )
+
+    def isBinOp(t: TokenKind) = precedence.keySet.contains(t)
+
+    def expr(minPrec: Int): Expr = {
+        var lhs = atom()
+        var done = false
+        while !done do {
+            val op = currentToken.kind
+            if !isBinOp(op) || precedence(op) < minPrec then
+                done = true
+            else
+                val prec = precedence(op)
+                nextToken()
+                val rhs = expr(prec + assoc(op))
+                lhs = EBinOp(op, lhs, rhs)
+        }
+        lhs
+    }
+
 }
